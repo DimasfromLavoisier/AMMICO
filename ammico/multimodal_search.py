@@ -1052,19 +1052,19 @@ class MultimodalSearch(AnalysisMethod):
                 image = image_gradcam_with_itm[list(query.values())[0]][s[0]]
                 p1 = Image.fromarray(image.astype("uint8"), "RGB")
             else:
-                # original_path = s[1]["filename"]
+                original_path = s[1]["filename"]
 
                 # # Specify the new folder path
-                # new_folder_path = "/home/dima/AMMICO/F_to_SaveTensors/demo_images/"
+                new_folder_path = "/content/demo_images/"
 
                 # # Create the new path by combining the new folder path and the original filename
-                # new_path = os.path.join(new_folder_path, os.path.basename(original_path))
+                new_path = os.path.join(new_folder_path, os.path.basename(original_path))
 
                 # # Copy the file to the new folder
                 # shutil.copy(original_path, new_path)
 
 
-                p1 = Image.open(s[1]["filename"]).convert("RGB")
+                p1 = Image.open(new_path).convert("RGB")
             p1.thumbnail((400, 400))
             display(
                 "Rank: "
