@@ -13,6 +13,7 @@ from IPython.display import display
 from lavis.models import load_model_and_preprocess, load_model, BlipBase
 from lavis.processors import load_processor
 
+import shutil
 
 class MultimodalSearch(AnalysisMethod):
     def __init__(self, subdict: dict) -> None:
@@ -35,6 +36,46 @@ class MultimodalSearch(AnalysisMethod):
         model, vis_processors, txt_processors = load_model_and_preprocess(
             name="blip2_feature_extractor",
             model_type="pretrain",
+            is_eval=True,
+            device=device,
+        )
+        return model, vis_processors, txt_processors
+    
+    def load_feature_extractor_model_blip2_large(self, device: str = "cuda"):
+        """
+        Load pretrain blip2_feature_extractor model and preprocessors for visual and text inputs from lavis.models.
+
+        Args:
+            device (str): device to use. Can be "cpu" or "cuda". Default: "cpu".
+
+        Returns:
+            model (torch.nn.Module): model.
+            vis_processors (dict): preprocessors for visual inputs.
+            txt_processors (dict): preprocessors for text inputs.
+        """
+        model, vis_processors, txt_processors = load_model_and_preprocess(
+            name="blip2_feature_extractor",
+            model_type="pretrain_vitL",
+            is_eval=True,
+            device=device,
+        )
+        return model, vis_processors, txt_processors
+    
+    def load_feature_extractor_model_blip2_coco(self, device: str = "cuda"):
+        """
+        Load pretrain blip2_feature_extractor model and preprocessors for visual and text inputs from lavis.models.
+
+        Args:
+            device (str): device to use. Can be "cpu" or "cuda". Default: "cpu".
+
+        Returns:
+            model (torch.nn.Module): model.
+            vis_processors (dict): preprocessors for visual inputs.
+            txt_processors (dict): preprocessors for text inputs.
+        """
+        model, vis_processors, txt_processors = load_model_and_preprocess(
+            name="blip2_feature_extractor",
+            model_type="coco",
             is_eval=True,
             device=device,
         )
@@ -200,6 +241,32 @@ class MultimodalSearch(AnalysisMethod):
                 [feat.image_embeds_proj[:, 0, :].squeeze(0) for feat in features_image]
             )
         return features_image_stacked
+    
+    def extract_image_features_blip2(
+        self, model, images_tensors: torch.Tensor
+    ) -> torch.Tensor:
+        """
+        Extract image features from images_tensors with blip2_feature_extractor model.
+
+        Args:
+            model (torch.nn.Module): model.
+            images_tensors (torch.Tensor): tensors of images stacked in device.
+
+        Returns:
+            features_image_stacked (torch.Tensor): tensors of images features stacked in device.
+        """
+        with torch.cuda.amp.autocast(
+            enabled=(MultimodalSearch.multimodal_device != torch.device("cpu"))
+        ):
+            features_image = [
+                model.extract_features({"image": ten, "text_input": ""}, mode="image")
+                for ten in images_tensors
+            ]
+            features_image_stacked = torch.stack(
+                [feat.image_embeds_proj[:, 0, :].squeeze(0) for feat in features_image]
+            )
+        return features_image_stacked
+    
 
     def extract_image_features_clip(
         self, model, images_tensors: torch.Tensor
@@ -344,6 +411,8 @@ class MultimodalSearch(AnalysisMethod):
             "clip_base": MultimodalSearch.load_feature_extractor_model_clip_base,
             "clip_vitl14": MultimodalSearch.load_feature_extractor_model_clip_vitl14,
             "clip_vitl14_336": MultimodalSearch.load_feature_extractor_model_clip_vitl14_336,
+            "blip2_large": MultimodalSearch.load_feature_extractor_model_blip2_large,
+            "blip2_coco": MultimodalSearch.load_feature_extractor_model_blip2_coco,
         }
 
         select_extract_image_features = {
@@ -353,6 +422,8 @@ class MultimodalSearch(AnalysisMethod):
             "clip_base": MultimodalSearch.extract_image_features_clip,
             "clip_vitl14": MultimodalSearch.extract_image_features_clip,
             "clip_vitl14_336": MultimodalSearch.extract_image_features_clip,
+            "blip2_large": MultimodalSearch.extract_image_features_blip2,
+            "blip2_coco": MultimodalSearch.extract_image_features_blip2,
         }
 
         if model_type in select_model.keys():
@@ -416,6 +487,8 @@ class MultimodalSearch(AnalysisMethod):
             "clip_base": MultimodalSearch.extract_image_features_clip,
             "clip_vitl14": MultimodalSearch.extract_image_features_clip,
             "clip_vitl14_336": MultimodalSearch.extract_image_features_clip,
+            "blip2_large": MultimodalSearch.extract_image_features_blip2,
+            "blip2_coco": MultimodalSearch.extract_image_features_blip2,
         }
 
         for query in search_query:
@@ -504,6 +577,9 @@ class MultimodalSearch(AnalysisMethod):
             similarity (torch.Tensor): similarity between images and querys.
             sorted_lists (list): sorted list of similarity.
         """
+
+        print(search_query)
+        
         if filter_number_of_images is None:
             filter_number_of_images = len(self.subdict)
         if filter_val_limit is None:
@@ -976,6 +1052,18 @@ class MultimodalSearch(AnalysisMethod):
                 image = image_gradcam_with_itm[list(query.values())[0]][s[0]]
                 p1 = Image.fromarray(image.astype("uint8"), "RGB")
             else:
+                # original_path = s[1]["filename"]
+
+                # # Specify the new folder path
+                # new_folder_path = "/home/dima/AMMICO/F_to_SaveTensors/demo_images/"
+
+                # # Create the new path by combining the new folder path and the original filename
+                # new_path = os.path.join(new_folder_path, os.path.basename(original_path))
+
+                # # Copy the file to the new folder
+                # shutil.copy(original_path, new_path)
+
+
                 p1 = Image.open(s[1]["filename"]).convert("RGB")
             p1.thumbnail((400, 400))
             display(
