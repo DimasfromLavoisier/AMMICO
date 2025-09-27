@@ -148,7 +148,50 @@ class ImageSummaryDetector(AnalysisMethod):
 
         return analysis_type, list_of_questions, is_summary, is_questions
 
-    def analyse_images(
+    def analyse_image(
+        self,
+        entry: dict,
+        analysis_type: Union[str, AnalysisType] = AnalysisType.SUMMARY_AND_QUESTIONS,
+        list_of_questions: Optional[List[str]] = None,
+        max_questions_per_image: int = 32,
+        is_concise_summary: bool = True,
+        is_concise_answer: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Analyse a single image entry. Returns dict with keys depending on analysis_type:
+            - 'caption' (str) if summary requested
+            - 'vqa' (dict) if questions requested
+        """
+        self.subdict = entry
+        analysis_type, list_of_questions, is_summary, is_questions = (
+            self._validate_analysis_type(
+                analysis_type, list_of_questions, max_questions_per_image
+            )
+        )
+
+        if is_summary:
+            try:
+                caps = self.generate_caption(
+                    entry,
+                    num_return_sequences=1,
+                    is_concise_summary=is_concise_summary,
+                )
+                self.subdict["caption"] = caps[0] if caps else ""
+            except Exception as e:
+                warnings.warn(f"Caption generation failed: {e}")
+
+        if is_questions:
+            try:
+                vqa_map = self.answer_questions(
+                    list_of_questions, entry, is_concise_answer
+                )
+                self.subdict["vqa"] = vqa_map
+            except Exception as e:
+                warnings.warn(f"VQA failed: {e}")
+
+        return self.subdict
+
+    def analyse_images_from_dict(
         self,
         analysis_type: Union[AnalysisType, str] = AnalysisType.SUMMARY_AND_QUESTIONS,
         list_of_questions: Optional[List[str]] = None,
