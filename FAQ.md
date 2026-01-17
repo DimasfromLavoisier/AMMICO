@@ -7,7 +7,7 @@ Some ammico components require `tensorflow` (e.g. Emotion detector), some `pytor
 ### 1. First, install tensorflow (https://www.tensorflow.org/install/pip)
 - create a new environment with python and activate it
 
-    ```conda create -n ammico_env python=3.10```
+    ```conda create -n ammico_env python=3.13```
 
     ```conda activate ammico_env```
 - install cudatoolkit from conda-forge
@@ -32,7 +32,7 @@ Some ammico components require `tensorflow` (e.g. Emotion detector), some `pytor
 
 - install tensorflow
 
-    ```python -m pip install tensorflow==2.12.1```
+    ```python -m pip install tensorflow==2.15```
 
 ### 2. Second, install pytorch
 
@@ -61,6 +61,10 @@ To make pycocotools work on Windows OS you may need to install `vs_BuildTools.ex
 Be careful, it requires around 7 GB of disk space.
 
 ![Screenshot 2023-06-01 165712](https://github.com/ssciwr/AMMICO/assets/8105097/3dfb302f-c390-46a7-a700-4e044f56c30f)
+
+### Version clashes between tensorflow and numpy
+
+Due to the `faces` module, the tensorflow version is currently fixed to at most `2.14.0`. This requires that `numpy` is restricted to `numpy==1.23.5`. If you experience issues with compatibility between tensorflow and numpy, you can try fixing the numpy version to this version.
 
 ## What happens to the images that are sent to google Cloud Vision?
 

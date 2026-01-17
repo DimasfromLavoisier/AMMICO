@@ -11,38 +11,45 @@ maintainers = [
     { name = "Inga Ulusoy", email = "ssc@iwr.uni-heidelberg.de" },
     { name = "Dmitrii Kapitan", email = "ssc@iwr.uni-heidelberg.de" },
 ]
-requires-python = ">=3.9, <3.12"
+requires-python = ">=3.9"
 license = { text = "MIT" }
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
     "License :: OSI Approved :: MIT License",
 ]
-
+ 
 dependencies = [
+    "accelerate",
+    "bitsandbytes",
     "colorgram.py",
     "colour-science",
+    "ctranslate2",
     "dash",
     "dash-bootstrap-components",
-    "deepface",
     "google-cloud-vision",
-    "googletrans==4.0.0rc1",
+    "googletrans-py", # instead of googletrans4.0.0rc1, for a temporary solution due to incompatibility with jupyterlab
     "grpcio",
-    "importlib_metadata",
     "importlib_resources",
     "matplotlib",
     "numpy",
     "opencv-python",
     "pandas",
-    "Pillow",
     "pooch",
-    "retina_face",
-    "setuptools",
+    "Pillow",
+    "qwen-vl-utils",
+    "safetensors",
+    "scipy",
     "spacy",
-    "tensorflow<=2.16.0",
     "tf-keras",
+    "torch<2.9",
+    "pytorch-lightning<=2.5.6",
+    "torchvision",
     "tqdm",
+    "transformers<4.52",
+    "torchcodec",
     "webcolors",
+    "whisperx",
 ]
 
 [project.optional-dependencies]
